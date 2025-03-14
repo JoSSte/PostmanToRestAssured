@@ -35,12 +35,19 @@ public class PostmanToRestAssuredGenerator {
 
     private List<TestCase> parseItems(JsonNode items) throws JsonProcessingException {
         List<TestCase> testCases = new ArrayList<>();
+        parseItemsRecursive(items, "", testCases);
+        return testCases;
+    }
+
+    private void parseItemsRecursive(JsonNode items, String folderPath, List<TestCase> testCases) throws JsonProcessingException {
         for (JsonNode item : items) {
             if (item.has("request")) {
                 TestCase testCase = new TestCase();
                 JsonNode request = item.path("request");
                 
-                testCase.name = item.path("name").asText();
+                // Combine folder path with request name for the test method name
+                String requestName = item.path("name").asText();
+                testCase.name = folderPath.isEmpty() ? requestName : folderPath + "_" + requestName;
                 testCase.method = request.path("method").asText();
                 testCase.url = request.path("url").path("raw").asText();
                 
@@ -72,9 +79,14 @@ public class PostmanToRestAssuredGenerator {
                 }
                 
                 testCases.add(testCase);
+            } else if (item.has("item")) {
+                // This is a folder, recursively process its items
+                String newFolderPath = folderPath.isEmpty() ? 
+                    item.path("name").asText() : 
+                    folderPath + "_" + item.path("name").asText();
+                parseItemsRecursive(item.path("item"), newFolderPath, testCases);
             }
         }
-        return testCases;
     }
 
     private List<ScriptCommand> parseScript(String script) {

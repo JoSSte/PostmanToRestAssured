@@ -13,6 +13,7 @@ This tool converts Postman collections into RestAssured test classes. It takes a
   - `pm.response.to.be.json()`
 - Handles environment variables
 - Generates proper JUnit 5 test structure
+- Supports Postman folders (nested requests)
 
 ## Prerequisites
 
@@ -82,6 +83,22 @@ public void get_message() {
 }
 ```
 
+### Folder Support
+
+The tool supports Postman folders and generates test methods with names that reflect the folder structure. For example:
+
+```java
+@Test
+public void auth_login_post() {  // From folder "auth" and request "login"
+    // ... test implementation
+}
+
+@Test
+public void users_admin_list_get() {  // From folder "users/admin" and request "list"
+    // ... test implementation
+}
+```
+
 ## Supported Postman Features
 
 ### Request Features
@@ -89,6 +106,7 @@ public void get_message() {
 - Headers
 - Request body (JSON)
 - URL parameters
+- Nested folders and requests
 
 ### Test Script Features
 - `pm.expect()` assertions
@@ -116,7 +134,6 @@ The order is not prioritised
 ### Advanced Features
 - Form data
 - Multipart form data
-
 
 ## Contributing
 

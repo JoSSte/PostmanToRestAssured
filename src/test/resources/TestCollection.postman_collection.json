@@ -2,6 +2,7 @@
 	"info": {
 		"_postman_id": "589c5aee-b182-4668-a4b1-2caae378cd2c",
 		"name": "TestCollection",
+		"description": "Test Collection to showcase postman all calls are made to [https://httpbin.org/#/HTTP_Methods/post_post](https://httpbin.org/#/HTTP_Methods/post_post)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "2985490"
 	},
@@ -45,6 +46,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
+							"console.log(\"Hello REST\");",
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
 							"});",
@@ -53,7 +55,8 @@
 							"    pm.expect(jsonData.json.message).to.equal(\"Hello World\");",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
