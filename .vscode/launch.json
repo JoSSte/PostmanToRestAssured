@@ -6,11 +6,21 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "dk.kodeninjaer.testing.converter.Main",
+            "projectName": "postman-to-restassured"
+        },
+        {
+            "type": "java",
             "name": "Maven Test",
             "request": "launch",
-            "mainClass": "dk.kodeninjaer.testing.converter.PostmanToRestAssured",
+            "mainClass": "dk.kodeninjaer.testing.converter.Main",
             "projectName": "postman-to-restassured",
-            "args": ["test"],
+            "args": [
+                "src/test/resources/TestCollection.postman_collection.json",
+                "output","TestCollectionTests"
+            ],
             "env": {
                 "MAVEN_HOME": "${env:MAVEN_HOME}",
                 "JAVA_HOME": "${env:JAVA_HOME}"
