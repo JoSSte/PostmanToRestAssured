@@ -9,8 +9,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -18,6 +19,7 @@ import java.util.regex.Pattern;
 
 public class PostmanToRestAssured {
 
+    private static final Logger logger = LoggerFactory.getLogger(PostmanToRestAssured.class);
     private static RequestSpecification requestSpec;
     private static List<TestCase> testCases = new ArrayList<>();
     private static Map<String, String> environment = new HashMap<>();
@@ -26,7 +28,10 @@ public class PostmanToRestAssured {
     public static void setup() throws IOException {
         // Read Postman collection
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode collection = mapper.readTree(new File("src/test/resources/test.postman_collection.json"));
+        JsonNode collection = mapper.readTree(
+            PostmanToRestAssured.class.getClassLoader()
+                .getResourceAsStream("TestCollection.postman_collection.json")
+        );
 
         // Extract base URL if exists
         String baseUrl = collection.path("info").path("url").asText("");
@@ -50,6 +55,10 @@ public class PostmanToRestAssured {
                 testCase.name = item.path("name").asText();
                 testCase.method = request.path("method").asText();
                 testCase.url = request.path("url").path("raw").asText();
+                // Log request details
+                logger.info("Test Case: {}", testCase.name);
+                logger.info("Method: {}", testCase.method);
+                logger.info("URL: {}", testCase.url);
                 
                 // Parse headers
                 JsonNode headers = request.path("header");
