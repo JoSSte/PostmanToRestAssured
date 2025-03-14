@@ -127,11 +127,27 @@ public class PostmanToRestAssuredGenerator {
         java.util.regex.Matcher testMatcher = testPattern.matcher(script);
         
         while (testMatcher.find()) {
-            Assertion assertion = new Assertion();
-            assertion.type = "test";
-            assertion.description = testMatcher.group(1);
-            assertion.script = testMatcher.group(2);
-            assertions.add(assertion);
+            String description = testMatcher.group(1);
+            String testScript = testMatcher.group(2);
+            
+            // Convert common pm.test assertions to RestAssured format
+            if (testScript.contains("pm.response.to.have.status")) {
+                Assertion assertion = new Assertion();
+                assertion.type = "expect";
+                assertion.matcher = "have.status";
+                assertion.expected = testScript.replaceAll(".*pm\\.response\\.to\\.have\\.status\\((\\d+)\\).*", "$1");
+                assertions.add(assertion);
+            }
+            
+            if (testScript.contains("pm.response.to.be.json")) {
+                Assertion assertion = new Assertion();
+                assertion.type = "expect";
+                assertion.matcher = "contentType";
+                assertion.expected = "\"application/json\"";
+                assertions.add(assertion);
+            }
+            
+            // Add more pm.test conversions as needed
         }
         
         return assertions;
@@ -207,30 +223,25 @@ public class PostmanToRestAssuredGenerator {
 
         // Write assertions
         for (Assertion assertion : test.testScript) {
-            if ("expect".equals(assertion.type)) {
-                switch (assertion.matcher) {
-                    case "equal":
-                        writer.write("        response.then().body(" + assertion.actual + ", equalTo(" + assertion.expected + "));\n");
-                        break;
-                    case "contain":
-                        writer.write("        response.then().body(" + assertion.actual + ", containsString(" + assertion.expected + "));\n");
-                        break;
-                    case "have.status":
-                        writer.write("        response.then().statusCode(" + assertion.expected + ");\n");
-                        break;
-                }
-            } else if ("test".equals(assertion.type)) {
-                writer.write("        // Test: " + assertion.description + "\n");
-                // Convert pm.test script to RestAssured assertions
-                String script = assertion.script;
-                if (script.contains("pm.response.to.have.status")) {
-                    String statusCode = script.replaceAll(".*pm\\.response\\.to\\.have\\.status\\((\\d+)\\).*", "$1");
-                    writer.write("        response.then().statusCode(" + statusCode + ");\n");
-                }
-                if (script.contains("pm.response.to.be.json")) {
-                    writer.write("        response.then().contentType(\"application/json\");\n");
-                }
-                // Add more pm.test conversions as needed
+            switch (assertion.matcher) {
+                case "equal":
+                    // Extract JSON path from the actual value (remove jsonData prefix)
+                    String jsonPath = assertion.actual.replace("jsonData.", "");
+                    // Unescape quotes in the expected value
+                    String unescapedExpected = assertion.expected.replace("\\\"", "\"");
+                    writer.write("        response.then().body(\"" + jsonPath + "\", equalTo(" + unescapedExpected + "));\n");
+                    break;
+                case "contain":
+                    String containPath = assertion.actual.replace("jsonData.", "");
+                    String unescapedContainExpected = assertion.expected.replace("\\\"", "\"");
+                    writer.write("        response.then().body(\"" + containPath + "\", containsString(" + unescapedContainExpected + "));\n");
+                    break;
+                case "have.status":
+                    writer.write("        response.then().statusCode(" + assertion.expected + ");\n");
+                    break;
+                case "contentType":
+                    writer.write("        response.then().contentType(" + assertion.expected + ");\n");
+                    break;
             }
         }
 
