@@ -45,7 +45,6 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-                            "console.log(\"Hello World\");",
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
 							"});",
@@ -79,6 +78,94 @@
 					],
 					"path": [
 						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PUT Request Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response contains json data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.json.message).to.equal(\"Hello World\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"Hello World\",\n    \"testData\": {\n        \"key1\": \"value1\",\n        \"key2\": \"value2\"\n    }\n}"
+				},
+				"url": {
+					"raw": "https://httpbin.org/put",
+					"protocol": "https",
+					"host": [
+						"httpbin",
+						"org"
+					],
+					"path": [
+						"put"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE Request Test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response contains json data\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.json).to.equal(null);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "https://httpbin.org/delete",
+					"protocol": "https",
+					"host": [
+						"httpbin",
+						"org"
+					],
+					"path": [
+						"delete"
 					]
 				}
 			},
