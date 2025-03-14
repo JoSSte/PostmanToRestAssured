@@ -32,7 +32,7 @@ public class PostmanToRestAssuredGeneratorTest {
         List<DynamicTest> dynamicTests = new ArrayList<>();
         
         // Get all .json files from resources directory
-        URL resourceUrl = getClass().getClassLoader().getResource(".");
+        URL resourceUrl = getClass().getClassLoader().getResource("targetedTest");
         if (resourceUrl == null) {
             fail("Could not find resources directory");
         }

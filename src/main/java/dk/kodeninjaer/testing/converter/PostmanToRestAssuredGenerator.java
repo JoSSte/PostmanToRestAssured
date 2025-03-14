@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class PostmanToRestAssuredGenerator {
     private static final Logger logger = LoggerFactory.getLogger(PostmanToRestAssuredGenerator.class);
@@ -29,8 +30,21 @@ public class PostmanToRestAssuredGenerator {
         
         String baseUrl = collection.path("info").path("url").asText("");
         List<TestCase> testCases = parseItems(collection.path("item"));
+        List<CollectionVariable> collectionVariables = parseCollectionVariables(collection.path("variable"));
         
         generateTestClass(baseUrl, testCases);
+    }
+
+    private List<CollectionVariable> parseCollectionVariables(JsonNode variables) {
+        List<CollectionVariable> collectionVariables = new ArrayList<>();
+        for (JsonNode variable : variables) {
+            collectionVariables.add(new CollectionVariable(variable.path("key").asText(), variable.path("value").asText()));
+        }
+        String collectionVariableList = collectionVariables.stream()
+            .map(v -> v.key + "=" + v.value)
+            .collect(Collectors.joining(", "));
+        logger.info("Collection variables: {}", collectionVariableList);
+        return collectionVariables;
     }
 
     private List<TestCase> parseItems(JsonNode items) throws JsonProcessingException {
@@ -106,7 +120,7 @@ public class PostmanToRestAssuredGenerator {
 
     private List<Assertion> parseAssertions(String script) {
         if(script == null || script.isEmpty()){
-            System.err.println("Empty test script found");
+            logger.error("Empty test script found");
         }
         List<Assertion> assertions = new ArrayList<>();
         
@@ -128,10 +142,11 @@ public class PostmanToRestAssuredGenerator {
                 assertion.matcher = expectMatcher.group(2);
                 assertion.expected = expectMatcher.group(3);
             }
+            //todo: check for collection gets and sets and substitute them with environment variables
             assertions.add(assertion);
         }
         if(assertions.isEmpty()){
-            System.err.println("No assertions found in script: " + script);
+            logger.error("No assertions found in script: " + script);
         }
 
         // Parse pm.test assertions
@@ -292,5 +307,26 @@ public class PostmanToRestAssuredGenerator {
         String expected;
         String description;  // for pm.test assertions
         String script;      // for pm.test assertions
+    }
+
+    private static class Variable {
+        String key;
+        String value;
+        String type;
+
+        Variable(String key, String value, String type) {
+            this.key = key;
+            this.value = value;
+            this.type = type;
+        }
+    }
+
+    private static class CollectionVariable extends Variable {
+        CollectionVariable(String key, String value, String type) {
+            super(key, value, type);
+        }
+        CollectionVariable(String key, String value) {
+            super(key, value, "Collection");
+        }
     }
 } 

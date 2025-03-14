@@ -1,10 +1,8 @@
 {
 	"info": {
-		"_postman_id": "589c5aee-b182-4668-a4b1-2caae378cd2c",
 		"name": "TestCollectionVariables",
 		"description": "Test Collection to showcase postman all calls are made to [https://httpbin.org/#/HTTP_Methods/post_post](https://httpbin.org/#/HTTP_Methods/post_post)",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "2985490"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -25,14 +23,23 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"packages": {},
-						"type": "text/javascript"
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-Dummy-header",
+						"value": "{{header}}",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "{{url}}/get",
 					"host": [
@@ -58,7 +65,7 @@
 							"});",
 							"pm.test(\"Response contains json data\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.json.message).to.equal(\"Hello World\");",
+							"    pm.expect(jsonData.json.message).to.equal(pm.collectionVariables.get(\"message\"));",
 							"});"
 						],
 						"type": "text/javascript",
@@ -76,7 +83,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"message\": \"Hello World\",\n    \"testData\": {\n        \"key1\": \"value1\",\n        \"key2\": \"value2\"\n    }\n}"
+					"raw": "{\n    \"message\": \"{{message}}\",\n    \"testData\": {\n        \"key1\": \"value1\",\n        \"key2\": \"value2\"\n    }\n}"
 				},
 				"url": {
 					"raw": "{{url}}/post",
@@ -201,6 +208,16 @@
 		{
 			"key": "url",
 			"value": "https://httpbin.org/",
+			"type": "string"
+		},
+		{
+			"key": "header",
+			"value": "I Am Your Header",
+			"type": "string"
+		},
+		{
+			"key": "message",
+			"value": "I have a message for you",
 			"type": "string"
 		}
 	]
