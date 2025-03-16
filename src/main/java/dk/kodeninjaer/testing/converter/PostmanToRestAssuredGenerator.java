@@ -181,7 +181,7 @@ public class PostmanToRestAssuredGenerator {
     }
 
     private void generateTestClass(String baseUrl, List<TestCase> testCases) throws IOException {
-        String outputPath = "src/test/java/" + outputPackage.replace('.', '/') + "/" + outputClassName + ".java";
+        String outputPath = "build/generated/" + outputPackage.replace('.', '/') + "/" + outputClassName + ".java";
         File outputFile = new File(outputPath);
         outputFile.getParentFile().mkdirs();
 

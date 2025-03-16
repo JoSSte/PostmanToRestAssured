@@ -1,6 +1,7 @@
 package dk.kodeninjaer.testing.converter;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.io.TempDir;
@@ -32,7 +33,7 @@ public class PostmanToRestAssuredGeneratorTest {
         List<DynamicTest> dynamicTests = new ArrayList<>();
         
         // Get all .json files from resources directory
-        URL resourceUrl = getClass().getClassLoader().getResource("targetedTest");
+        URL resourceUrl = getClass().getClassLoader().getResource(".");
         if (resourceUrl == null) {
             fail("Could not find resources directory");
         }
