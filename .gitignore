@@ -2,3 +2,4 @@ target/
 dependency-reduced-pom.xml
 src/test/java/output/
 src/test/java/dk/kodeninjaer/testing/converter/generated/
+.gradle/
