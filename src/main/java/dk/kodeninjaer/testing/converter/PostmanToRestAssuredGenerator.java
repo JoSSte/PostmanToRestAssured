@@ -17,7 +17,8 @@ public class PostmanToRestAssuredGenerator {
     private static final Logger logger = LoggerFactory.getLogger(PostmanToRestAssuredGenerator.class);
     private final String outputPackage;
     private final String outputClassName;
-    private final Map<String, String> environment = new HashMap<>();
+    public static final String OUTPUT_BASEPATH = "build/generated/";
+    //private final Map<String, String> environment = new HashMap<>();
 
     public PostmanToRestAssuredGenerator(String outputPackage, String outputClassName) {
         this.outputPackage = outputPackage;
@@ -32,7 +33,7 @@ public class PostmanToRestAssuredGenerator {
         List<TestCase> testCases = parseItems(collection.path("item"));
         List<CollectionVariable> collectionVariables = parseCollectionVariables(collection.path("variable"));
         
-        generateTestClass(baseUrl, testCases);
+        generateTestClass(baseUrl, testCases, collectionVariables);
     }
 
     private List<CollectionVariable> parseCollectionVariables(JsonNode variables) {
@@ -180,8 +181,8 @@ public class PostmanToRestAssuredGenerator {
         return assertions;
     }
 
-    private void generateTestClass(String baseUrl, List<TestCase> testCases) throws IOException {
-        String outputPath = "build/generated/" + outputPackage.replace('.', '/') + "/" + outputClassName + ".java";
+    private void generateTestClass(String baseUrl, List<TestCase> testCases, List<CollectionVariable> collectionVariables) throws IOException {
+        String outputPath = OUTPUT_BASEPATH + outputPackage.replace('.', '/') + "/" + outputClassName + ".java";
         File outputFile = new File(outputPath);
         outputFile.getParentFile().mkdirs();
 
