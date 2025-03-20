@@ -18,6 +18,7 @@ public class PostmanToRestAssuredGenerator {
     private final String outputPackage;
     private final String outputClassName;
     public static final String OUTPUT_BASEPATH = "build/generated/";
+    List<CollectionVariable> collectionVariables;
     //private final Map<String, String> environment = new HashMap<>();
 
     public PostmanToRestAssuredGenerator(String outputPackage, String outputClassName) {
@@ -31,13 +32,13 @@ public class PostmanToRestAssuredGenerator {
         
         String baseUrl = collection.path("info").path("url").asText("");
         List<TestCase> testCases = parseItems(collection.path("item"));
-        List<CollectionVariable> collectionVariables = parseCollectionVariables(collection.path("variable"));
+        parseCollectionVariables(collection.path("variable"));
         
-        generateTestClass(baseUrl, testCases, collectionVariables);
+        generateTestClass(baseUrl, testCases);
     }
 
-    private List<CollectionVariable> parseCollectionVariables(JsonNode variables) {
-        List<CollectionVariable> collectionVariables = new ArrayList<>();
+    private void parseCollectionVariables(JsonNode variables) {
+        collectionVariables = new ArrayList<>();
         for (JsonNode variable : variables) {
             collectionVariables.add(new CollectionVariable(variable.path("key").asText(), variable.path("value").asText()));
         }
@@ -45,7 +46,6 @@ public class PostmanToRestAssuredGenerator {
             .map(v -> v.key + "=" + v.value)
             .collect(Collectors.joining(", "));
         logger.info("Collection variables: {}", collectionVariableList);
-        return collectionVariables;
     }
 
     private List<TestCase> parseItems(JsonNode items) throws JsonProcessingException {
@@ -181,7 +181,7 @@ public class PostmanToRestAssuredGenerator {
         return assertions;
     }
 
-    private void generateTestClass(String baseUrl, List<TestCase> testCases, List<CollectionVariable> collectionVariables) throws IOException {
+    private void generateTestClass(String baseUrl, List<TestCase> testCases) throws IOException {
         String outputPath = OUTPUT_BASEPATH + outputPackage.replace('.', '/') + "/" + outputClassName + ".java";
         File outputFile = new File(outputPath);
         outputFile.getParentFile().mkdirs();
@@ -213,6 +213,12 @@ public class PostmanToRestAssuredGenerator {
             writer.write("            .setBaseUri(\"" + baseUrl + "\")\n");
             writer.write("            .build();\n");
             writer.write("    }\n\n");
+
+            // Write collection variables
+            writer.write("    private static Map<String, String> collectionVariables = new HashMap<>();\n");
+            for (CollectionVariable variable : collectionVariables) {
+                writer.write("    collectionVariables.put(\"" + variable.key + "\", \"" + variable.value + "\");\n");
+            }
 
             // Write test methods
             for (TestCase test : testCases) {
