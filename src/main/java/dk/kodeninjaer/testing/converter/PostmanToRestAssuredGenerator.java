@@ -252,7 +252,12 @@ public class PostmanToRestAssuredGenerator {
                                         .replace("\r", "\\r");
             writer.write("        spec.body(\"" + escapedBody + "\");\n\n");
         }
-
+        Matcher urlVarMatcher = Patterns.VARIABLE.matcher(test.url);
+        if(urlVarMatcher.find()){
+            String variableName = urlVarMatcher.group().substring(2, urlVarMatcher.group().length() - 2); 
+            test.url = test.url.replace(urlVarMatcher.group(), "\" + collectionVariables.get(\"" + variableName + "\") + \"");
+            //TODO find all variables in the url and replace them
+        }
         writer.write("        Response response = spec.when()." + test.method.toLowerCase() + "(\"" + test.url + "\");\n\n");
 
         // Write assertions
