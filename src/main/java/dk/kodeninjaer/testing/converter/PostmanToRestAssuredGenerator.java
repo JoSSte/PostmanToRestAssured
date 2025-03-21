@@ -82,6 +82,8 @@ public class PostmanToRestAssuredGenerator {
                 }
 
                 // Parse pre-request scripts
+                //TODO: check if there is any pm.collectionVariables.set() in the script and add them to the collectionVariables list
+                //TODO: check if there is any pm.environment.set() in the script and add them to the collectionVariables list (we will expect Enironment only variables to be set independently)
                 JsonNode events = item.path("event");
                 for (JsonNode event : events) {
                     String listen = event.path("listen").asText();

@@ -107,6 +107,7 @@ public void users_admin_list_get() {  // From folder "users/admin" and request "
 - Request body (JSON)
 - URL parameters
 - Nested folders and requests
+- Collection Variables (if hardcoded - variables set in the pre-request script are still not supported)
 
 ### Test Script Features
 - `pm.expect()` assertions
@@ -117,7 +118,7 @@ public void users_admin_list_get() {  // From folder "users/admin" and request "
 ## Features we aim to implement
 The order is not prioritised
 ### Collection Features
-- Collection variables
+
 - Collection-level scripts
 - Collection-level pre-request scripts
 - Collection-level test scripts
