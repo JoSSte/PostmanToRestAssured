@@ -1,6 +1,6 @@
 {
 	"info": {
-		"name": "TestCollection",
+		"name": "TestCollectionVariables",
 		"description": "Test Collection to showcase postman all calls are made to [https://httpbin.org/#/HTTP_Methods/post_post](https://httpbin.org/#/HTTP_Methods/post_post)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -16,19 +16,34 @@
 							"    pm.response.to.have.status(200);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-Dummy-header",
+						"value": "{{header}}",
+						"type": "text"
+					}
+				],
 				"url": {
-					"raw": "https://httpbin.org/get",
-					"protocol": "https",
+					"raw": "{{url}}/get",
 					"host": [
-						"httpbin",
-						"org"
+						"{{url}}"
 					],
 					"path": [
 						"get"
@@ -50,7 +65,7 @@
 							"});",
 							"pm.test(\"Response contains json data\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.json.message).to.equal(\"Hello World\");",
+							"    pm.expect(jsonData.json.message).to.equal(pm.collectionVariables.get(\"message\"));",
 							"});"
 						],
 						"type": "text/javascript",
@@ -68,14 +83,12 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"message\": \"Hello World\",\n    \"testData\": {\n        \"key1\": \"value1\",\n        \"key2\": \"value2\"\n    }\n}"
+					"raw": "{\n    \"message\": \"{{message}}\",\n    \"testData\": {\n        \"key1\": \"value1\",\n        \"key2\": \"value2\"\n    }\n}"
 				},
 				"url": {
-					"raw": "https://httpbin.org/post",
-					"protocol": "https",
+					"raw": "{{url}}/post",
 					"host": [
-						"httpbin",
-						"org"
+						"{{url}}"
 					],
 					"path": [
 						"post"
@@ -117,11 +130,9 @@
 					"raw": "{\n    \"message\": \"Hello World\",\n    \"testData\": {\n        \"key1\": \"value1\",\n        \"key2\": \"value2\"\n    }\n}"
 				},
 				"url": {
-					"raw": "https://httpbin.org/put",
-					"protocol": "https",
+					"raw": "{{url}}/put",
 					"host": [
-						"httpbin",
-						"org"
+						"{{url}}"
 					],
 					"path": [
 						"put"
@@ -159,11 +170,9 @@
 					}
 				],
 				"url": {
-					"raw": "https://httpbin.org/delete",
-					"protocol": "https",
+					"raw": "{{url}}/delete",
 					"host": [
-						"httpbin",
-						"org"
+						"{{url}}"
 					],
 					"path": [
 						"delete"
@@ -171,6 +180,45 @@
 				}
 			},
 			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "https://httpbin.org/",
+			"type": "string"
+		},
+		{
+			"key": "header",
+			"value": "I Am Your Header",
+			"type": "string"
+		},
+		{
+			"key": "message",
+			"value": "I have a message for you",
+			"type": "string"
 		}
 	]
 }

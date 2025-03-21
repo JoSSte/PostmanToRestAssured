@@ -18,8 +18,8 @@
             "mainClass": "dk.kodeninjaer.testing.converter.Main",
             "projectName": "postman-to-restassured",
             "args": [
-                "src/test/resources/TestCollectionFolders.postman_collection.json",
-                "output","TestCollectionFoldersTests"
+                "src/test/resources/TestCollectionVariables.postman_collection.json",
+                "output","TestCollectionVariableTests"
             ],
             "env": {
                 "MAVEN_HOME": "${env:MAVEN_HOME}",
