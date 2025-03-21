@@ -188,6 +188,11 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Unknown-Collection-Variable",
+						"value": "{{unknownVariable}}",
+						"type": "text"
 					}
 				],
 				"body": {
