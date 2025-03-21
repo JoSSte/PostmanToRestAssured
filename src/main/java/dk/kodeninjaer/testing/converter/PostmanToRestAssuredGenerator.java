@@ -20,7 +20,6 @@ public class PostmanToRestAssuredGenerator {
     private final String outputClassName;
     public static final String OUTPUT_BASEPATH = "build/generated/";
     List<CollectionVariable> collectionVariables;
-    //private final Map<String, String> environment = new HashMap<>();
 
     public PostmanToRestAssuredGenerator(String outputPackage, String outputClassName) {
         this.outputPackage = outputPackage;
@@ -30,11 +29,11 @@ public class PostmanToRestAssuredGenerator {
     public void generate(String postmanCollectionPath) throws IOException, JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode collection = mapper.readTree(new File(postmanCollectionPath));
-        
+
         String baseUrl = collection.path("info").path("url").asText("");
         List<TestCase> testCases = parseItems(collection.path("item"));
         parseCollectionVariables(collection.path("variable"));
-        
+
         generateTestClass(baseUrl, testCases);
     }
 
@@ -44,8 +43,8 @@ public class PostmanToRestAssuredGenerator {
             collectionVariables.add(new CollectionVariable(variable.path("key").asText(), variable.path("value").asText()));
         }
         String collectionVariableList = collectionVariables.stream()
-            .map(v -> v.key + "=" + v.value)
-            .collect(Collectors.joining(", "));
+                .map(v -> v.key + "=" + v.value)
+                .collect(Collectors.joining(", "));
         logger.info("Collection variables: {}", collectionVariableList);
     }
 
@@ -60,13 +59,13 @@ public class PostmanToRestAssuredGenerator {
             if (item.has("request")) {
                 TestCase testCase = new TestCase();
                 JsonNode request = item.path("request");
-                
+
                 // Combine folder path with request name for the test method name
                 String requestName = item.path("name").asText();
                 testCase.name = folderPath.isEmpty() ? requestName : folderPath + "_" + requestName;
                 testCase.method = request.path("method").asText();
                 testCase.url = request.path("url").path("raw").asText();
-                
+
                 // Parse headers
                 JsonNode headers = request.path("header");
                 for (JsonNode header : headers) {
@@ -75,15 +74,18 @@ public class PostmanToRestAssuredGenerator {
                         header.path("value").asText()
                     );
                 }
-                
+
                 // Parse body if exists
                 if (request.has("body")) {
                     testCase.body = request.path("body").path("raw").asText();
                 }
 
                 // Parse pre-request scripts
-                //TODO: check if there is any pm.collectionVariables.set() in the script and add them to the collectionVariables list
-                //TODO: check if there is any pm.environment.set() in the script and add them to the collectionVariables list (we will expect Enironment only variables to be set independently)
+                // TODO: check if there is any pm.collectionVariables.set() in the script and
+                // add them to the collectionVariables list
+                // TODO: check if there is any pm.environment.set() in the script and add them
+                // to the collectionVariables list (we will expect Enironment only variables to
+                // be set independently)
                 JsonNode events = item.path("event");
                 for (JsonNode event : events) {
                     String listen = event.path("listen").asText();
@@ -95,12 +97,12 @@ public class PostmanToRestAssuredGenerator {
                         testCase.testScript = parseAssertions(script);
                     }
                 }
-                
+
                 testCases.add(testCase);
             } else if (item.has("item")) {
                 // This is a folder, recursively process its items
-                String newFolderPath = folderPath.isEmpty() ? 
-                    item.path("name").asText() : 
+                String newFolderPath = folderPath.isEmpty() ?
+                    item.path("name").asText() :
                     folderPath + "_" + item.path("name").asText();
                 parseItemsRecursive(item.path("item"), newFolderPath, testCases);
             }
@@ -110,7 +112,7 @@ public class PostmanToRestAssuredGenerator {
     private List<ScriptCommand> parseScript(String script) {
         List<ScriptCommand> commands = new ArrayList<>();
         java.util.regex.Matcher matcher = Patterns.ENVIRONMENT_SET.matcher(script);
-        
+
         while (matcher.find()) {
             ScriptCommand cmd = new ScriptCommand();
             cmd.type = "SET_ENV";
@@ -122,19 +124,20 @@ public class PostmanToRestAssuredGenerator {
     }
 
     private List<Assertion> parseAssertions(String script) {
-        if(script == null || script.isEmpty()){
+        if (script == null || script.isEmpty()) {
             logger.error("Empty test script found");
         }
         List<Assertion> assertions = new ArrayList<>();
-        
+
         // Parse pm.expect assertions
-        Pattern expectPattern = Pattern.compile("pm\\.expect\\((.*?)\\)\\.to\\.(.*?)\\((.*?)\\)|pm\\.response\\.to\\.have\\.status\\((\\d+)\\)");
+        Pattern expectPattern = Pattern.compile(
+                "pm\\.expect\\((.*?)\\)\\.to\\.(.*?)\\((.*?)\\)|pm\\.response\\.to\\.have\\.status\\((\\d+)\\)");
         java.util.regex.Matcher expectMatcher = expectPattern.matcher(script);
-        
+
         while (expectMatcher.find()) {
             Assertion assertion = new Assertion();
             assertion.type = "expect";
-            
+
             if (expectMatcher.group(4) != null) {
                 // pm.response.to.have.status(200)
                 assertion.matcher = "have.status";
@@ -145,21 +148,21 @@ public class PostmanToRestAssuredGenerator {
                 assertion.matcher = expectMatcher.group(2);
                 assertion.expected = expectMatcher.group(3);
             }
-            //todo: check for collection gets and sets and substitute them with environment variables
+            // TODO: check for collection gets and sets and substitute them with environment
+            // variables
             assertions.add(assertion);
         }
-        if(assertions.isEmpty()){
+        if (assertions.isEmpty()) {
             logger.error("No assertions found in script: " + script);
         }
 
         // Parse pm.test assertions
-        //Pattern testPattern = Pattern.compile("pm\\.test\\([\"'](.*?)[\"'],\\s*function\\s*\\(\\)\\s*\\{\\s*(.*?)\\s*\\}\\)");
         java.util.regex.Matcher testMatcher = Patterns.TEST.matcher(script);
-        
+
         while (testMatcher.find()) {
-            //String description = testMatcher.group(1);
+            // String description = testMatcher.group(1);
             String testScript = testMatcher.group(2);
-            
+
             // Convert common pm.test assertions to RestAssured format
             if (testScript.contains("pm.response.to.have.status")) {
                 Assertion assertion = new Assertion();
@@ -168,7 +171,7 @@ public class PostmanToRestAssuredGenerator {
                 assertion.expected = testScript.replaceAll(".*pm\\.response\\.to\\.have\\.status\\((\\d+)\\).*", "$1");
                 assertions.add(assertion);
             }
-            
+
             if (testScript.contains("pm.response.to.be.json")) {
                 Assertion assertion = new Assertion();
                 assertion.type = "expect";
@@ -176,10 +179,10 @@ public class PostmanToRestAssuredGenerator {
                 assertion.expected = "\"application/json\"";
                 assertions.add(assertion);
             }
-            
+
             // Add more pm.test conversions as needed
         }
-        
+
         return assertions;
     }
 
@@ -235,7 +238,7 @@ public class PostmanToRestAssuredGenerator {
         String methodName = test.name.replaceAll("[^a-zA-Z0-9]", "_");
         writer.write("    @Test\n");
         writer.write("    public void " + methodName + "() {\n");
-        
+
         // Write pre-request script execution
         for (ScriptCommand cmd : test.preRequestScript) {
             if ("SET_ENV".equals(cmd.type)) {
@@ -251,23 +254,26 @@ public class PostmanToRestAssuredGenerator {
 
             // Escape quotes and newlines in the JSON body
             String escapedBody = test.body.replace("\"", "\\\"")
-                                        .replace("\n", "\\n")
-                                        .replace("\r", "\\r");
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r");
             Matcher bodyVarMatcher = Patterns.VARIABLE.matcher(escapedBody);
-            while(bodyVarMatcher.find()){
-                String variableName = bodyVarMatcher.group().substring(2, bodyVarMatcher.group().length() - 2); 
-                escapedBody = escapedBody.replace(bodyVarMatcher.group(), "\" + collectionVariables.get(\"" + variableName + "\") + \"");
-                //TODO find all variables in the body and replace them
+            while (bodyVarMatcher.find()) {
+                String variableName = bodyVarMatcher.group().substring(2, bodyVarMatcher.group().length() - 2);
+                escapedBody = escapedBody.replace(bodyVarMatcher.group(),
+                        "\" + collectionVariables.get(\"" + variableName + "\") + \"");
+                // TODO find all variables in the body and replace them
             }
             writer.write("        spec.body(\"" + escapedBody + "\");\n\n");
         }
         Matcher urlVarMatcher = Patterns.VARIABLE.matcher(test.url);
-        while(urlVarMatcher.find()){
-            String variableName = urlVarMatcher.group().substring(2, urlVarMatcher.group().length() - 2); 
-            test.url = test.url.replace(urlVarMatcher.group(), "\" + collectionVariables.get(\"" + variableName + "\") + \"");
-            //TODO find all variables in the url and replace them
+        while (urlVarMatcher.find()) {
+            String variableName = urlVarMatcher.group().substring(2, urlVarMatcher.group().length() - 2);
+            test.url = test.url.replace(urlVarMatcher.group(),
+                    "\" + collectionVariables.get(\"" + variableName + "\") + \"");
+            // TODO find all variables in the url and replace them
         }
-        writer.write("        Response response = spec.when()." + test.method.toLowerCase() + "(\"" + test.url + "\");\n\n");
+        writer.write(
+                "        Response response = spec.when()." + test.method.toLowerCase() + "(\"" + test.url + "\");\n\n");
 
         // Write assertions
         for (Assertion assertion : test.testScript) {
@@ -277,12 +283,14 @@ public class PostmanToRestAssuredGenerator {
                     String jsonPath = assertion.actual.replace("jsonData.", "");
                     // Unescape quotes in the expected value
                     String unescapedExpected = assertion.expected.replace("\\\"", "\"");
-                    writer.write("        response.then().body(\"" + jsonPath + "\", equalTo(" + unescapedExpected + "));\n");
+                    writer.write("        response.then().body(\"" + jsonPath + "\", equalTo(" + unescapedExpected
+                            + "));\n");
                     break;
                 case "contain":
                     String containPath = assertion.actual.replace("jsonData.", "");
                     String unescapedContainExpected = assertion.expected.replace("\\\"", "\"");
-                    writer.write("        response.then().body(\"" + containPath + "\", containsString(" + unescapedContainExpected + "));\n");
+                    writer.write("        response.then().body(\"" + containPath + "\", containsString("
+                            + unescapedContainExpected + "));\n");
                     break;
                 case "have.status":
                     writer.write("        response.then().statusCode(" + assertion.expected + ");\n");
@@ -301,23 +309,29 @@ public class PostmanToRestAssuredGenerator {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String headerValue = "\"" + entry.getValue() + "\"";
             Matcher matcher = Patterns.VARIABLE.matcher(entry.getValue());
-            if(matcher.find()){
-                //log find
+            while (matcher.find()) {
+                // log find
                 logger.info("Variable found in header: " + entry.getValue());
-                //resolve variable
-                String variableName = matcher.group().substring(2, matcher.group().length() - 2); 
-                //logger.info("Variable name: " + variableName);
-                if(collectionVariables.stream().anyMatch(v -> v.key.equals(variableName))){
-                    if(entry.getValue() == matcher.group()){
-                      headerValue = entry.getValue().replace(matcher.group(), "collectionVariables.get(\"" + variableName + "\")");
-                      logger.info("Resolved variable: " + headerValue);
-                    } else {
-                        headerValue = "\""+entry.getValue().replace(matcher.group(), "\" + collectionVariables.get(\"" + variableName + "\") + \"")+"\"";
-                        logger.info("Variable {} is a part of an aggregate string: {}" , variableName, entry.getValue());
-                    }
-                }else{
-                    logger.error("Variable {} not found in collection variables: " , variableName);
+                // resolve variable
+                String variableName = matcher.group().substring(2, matcher.group().length() - 2);
+                // logger.info("Variable name: " + variableName);
+                if (!collectionVariables.stream().anyMatch(v -> v.key.equals(variableName))) {
+                    //TODO: add comment to the generated code to indicate that the variable is not found in the collection variables list
+                    logger.warn(
+                            "Variable {} not found in collection variables. Adding it to the collection variables list with an empty value",
+                            variableName);
+                    collectionVariables.add(new CollectionVariable(variableName, ""));
                 }
+                if (entry.getValue() == matcher.group()) {
+                    headerValue = entry.getValue().replace(matcher.group(),
+                            "collectionVariables.get(\"" + variableName + "\")");
+                    logger.info("Resolved variable: " + headerValue);
+                } else {
+                    headerValue = "\"" + entry.getValue().replace(matcher.group(),
+                            "\" + collectionVariables.get(\"" + variableName + "\") + \"") + "\"";
+                    logger.info("Variable {} is a part of an aggregate string: {}", variableName, entry.getValue());
+                }
+
             }
             sb.append("            put(\"").append(entry.getKey()).append("\", ").append(headerValue).append(");\n");
         }
@@ -342,12 +356,12 @@ public class PostmanToRestAssuredGenerator {
     }
 
     private static class Assertion {
-        String type;  // "expect" or "test"
+        String type; // "expect" or "test"
         String actual;
         String matcher;
         String expected;
-        String description;  // for pm.test assertions
-        String script;      // for pm.test assertions
+        String description; // for pm.test assertions
+        String script; // for pm.test assertions
     }
 
     private static class Variable {
@@ -366,8 +380,9 @@ public class PostmanToRestAssuredGenerator {
         CollectionVariable(String key, String value, String type) {
             super(key, value, type);
         }
+
         CollectionVariable(String key, String value) {
             super(key, value, "Collection");
         }
     }
-} 
+}
