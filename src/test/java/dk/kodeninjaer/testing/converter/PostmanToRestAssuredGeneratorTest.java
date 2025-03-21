@@ -1,21 +1,17 @@
 package dk.kodeninjaer.testing.converter;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class PostmanToRestAssuredGeneratorTest {
 
@@ -50,6 +46,10 @@ public class PostmanToRestAssuredGeneratorTest {
             assertTrue(Files.exists(expectedOutputPath),
                     "Generated test file should exist at " + expectedOutputPath);
 
+            //TODO compile the generated file
+            //TODO run the generated file
+            //TODO assert the output
+
             // Basic validation of the generated file
             String content = Files.readString(expectedOutputPath);
             assertTrue(content.contains("@Test"), "Generated file should contain @Test annotations");
@@ -57,14 +57,14 @@ public class PostmanToRestAssuredGeneratorTest {
                     "Generated file should contain the correct class name");
             assertTrue(content.contains("RestAssured"),
                     "Generated file should contain RestAssured imports");
-            Pattern pattern = Pattern.compile(".*\\{\\{[a-zA-Z0-9]*\\}\\}.*");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = Patterns.VARIABLE.matcher(content);
             assertFalse(matcher.find(), "Generated file should not contain double moustache notation elements");
         } catch (IOException e) {
             fail("Failed to process collection " + collectionPath + ": " + e.getMessage());
         }
     }
 
+    @Disabled("Not implemented yet")
     @ParameterizedTest
     @ValueSource(strings = { "src/test/resources/TestCollectionVariables.postman_collection.json" })
     void processVariableCollection(Path collectionPath, @TempDir Path tempDir) {

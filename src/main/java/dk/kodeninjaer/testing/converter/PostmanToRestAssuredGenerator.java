@@ -106,8 +106,7 @@ public class PostmanToRestAssuredGenerator {
 
     private List<ScriptCommand> parseScript(String script) {
         List<ScriptCommand> commands = new ArrayList<>();
-        Pattern pattern = Pattern.compile("pm\\.environment\\.set\\([\"'](.*?)[\"'],\\s*(.*?)\\)");
-        java.util.regex.Matcher matcher = pattern.matcher(script);
+        java.util.regex.Matcher matcher = Patterns.ENVIRONMENT_SET.matcher(script);
         
         while (matcher.find()) {
             ScriptCommand cmd = new ScriptCommand();
