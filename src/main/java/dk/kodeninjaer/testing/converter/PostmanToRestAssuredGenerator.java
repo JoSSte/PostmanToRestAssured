@@ -246,14 +246,21 @@ public class PostmanToRestAssuredGenerator {
         writer.write("            .headers(" + generateMap(test.headers) + ");\n\n");
 
         if (test.body != null) {
+
             // Escape quotes and newlines in the JSON body
             String escapedBody = test.body.replace("\"", "\\\"")
                                         .replace("\n", "\\n")
                                         .replace("\r", "\\r");
+            Matcher bodyVarMatcher = Patterns.VARIABLE.matcher(escapedBody);
+            while(bodyVarMatcher.find()){
+                String variableName = bodyVarMatcher.group().substring(2, bodyVarMatcher.group().length() - 2); 
+                escapedBody = escapedBody.replace(bodyVarMatcher.group(), "\" + collectionVariables.get(\"" + variableName + "\") + \"");
+                //TODO find all variables in the body and replace them
+            }
             writer.write("        spec.body(\"" + escapedBody + "\");\n\n");
         }
         Matcher urlVarMatcher = Patterns.VARIABLE.matcher(test.url);
-        if(urlVarMatcher.find()){
+        while(urlVarMatcher.find()){
             String variableName = urlVarMatcher.group().substring(2, urlVarMatcher.group().length() - 2); 
             test.url = test.url.replace(urlVarMatcher.group(), "\" + collectionVariables.get(\"" + variableName + "\") + \"");
             //TODO find all variables in the url and replace them
