@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -150,11 +151,11 @@ public class PostmanToRestAssuredGenerator {
         }
 
         // Parse pm.test assertions
-        Pattern testPattern = Pattern.compile("pm\\.test\\([\"'](.*?)[\"'],\\s*function\\s*\\(\\)\\s*\\{\\s*(.*?)\\s*\\}\\)");
-        java.util.regex.Matcher testMatcher = testPattern.matcher(script);
+        //Pattern testPattern = Pattern.compile("pm\\.test\\([\"'](.*?)[\"'],\\s*function\\s*\\(\\)\\s*\\{\\s*(.*?)\\s*\\}\\)");
+        java.util.regex.Matcher testMatcher = Patterns.TEST.matcher(script);
         
         while (testMatcher.find()) {
-            String description = testMatcher.group(1);
+            //String description = testMatcher.group(1);
             String testScript = testMatcher.group(2);
             
             // Convert common pm.test assertions to RestAssured format
@@ -284,7 +285,27 @@ public class PostmanToRestAssuredGenerator {
     private String generateMap(Map<String, String> map) {
         StringBuilder sb = new StringBuilder("new HashMap<String, String>() {{\n");
         for (Map.Entry<String, String> entry : map.entrySet()) {
-            sb.append("            put(\"").append(entry.getKey()).append("\", \"").append(entry.getValue()).append("\");\n");
+            String headerValue = "\"" + entry.getValue() + "\"";
+            Matcher matcher = Patterns.VARIABLE.matcher(entry.getValue());
+            if(matcher.find()){
+                //log find
+                logger.info("Variable found in header: " + entry.getValue());
+                //resolve variable
+                String variableName = matcher.group().substring(2, matcher.group().length() - 2); 
+                //logger.info("Variable name: " + variableName);
+                if(collectionVariables.stream().anyMatch(v -> v.key.equals(variableName))){
+                    if(entry.getValue() == matcher.group()){
+                      headerValue = entry.getValue().replace(matcher.group(), "collectionVariables.get(\"" + variableName + "\")");
+                      logger.info("Resolved variable: " + headerValue);
+                    } else {
+                        headerValue = "\""+entry.getValue().replace(matcher.group(), "\" + collectionVariables.get(\"" + variableName + "\") + \"")+"\"";
+                        logger.info("Variable {} is a part of an aggregate string: {}" , variableName, entry.getValue());
+                    }
+                }else{
+                    logger.error("Variable {} not found in collection variables: " , variableName);
+                }
+            }
+            sb.append("            put(\"").append(entry.getKey()).append("\", ").append(headerValue).append(");\n");
         }
         sb.append("        }}");
         return sb.toString();

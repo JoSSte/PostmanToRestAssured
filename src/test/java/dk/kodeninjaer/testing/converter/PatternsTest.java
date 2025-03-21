@@ -21,6 +21,7 @@ public class PatternsTest {
             Patterns.class.getDeclaredConstructor().newInstance();
         });
     }
+    
     @Test
     public void testEnvironmentSet() {
         String script = "pm.environment.set(\"key\", \"value\");";

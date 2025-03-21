@@ -64,7 +64,7 @@ public class PostmanToRestAssuredGeneratorTest {
         }
     }
 
-    @Disabled("Not implemented yet")
+//    @Disabled("Not implemented yet")
     @ParameterizedTest
     @ValueSource(strings = { "src/test/resources/TestCollectionVariables.postman_collection.json" })
     void processVariableCollection(Path collectionPath, @TempDir Path tempDir) {
@@ -100,8 +100,8 @@ public class PostmanToRestAssuredGeneratorTest {
             // assertFalse(content.matches(".*\\{\\{\\}\\}.*"),"Generated file should not
             // contain double moustache notation elements");
 
-            Pattern pattern = Pattern.compile(".*\\{\\{[a-zA-Z0-9]*\\}\\}.*");
-            Matcher matcher = pattern.matcher(content);
+
+            Matcher matcher = Patterns.VARIABLE.matcher(content);
             assertFalse(matcher.find(), "Generated file should not contain double moustache notation elements");
 
         } catch (IOException e) {
