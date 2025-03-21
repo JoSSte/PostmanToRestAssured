@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -81,6 +82,8 @@ public class PostmanToRestAssuredGenerator {
                 }
 
                 // Parse pre-request scripts
+                //TODO: check if there is any pm.collectionVariables.set() in the script and add them to the collectionVariables list
+                //TODO: check if there is any pm.environment.set() in the script and add them to the collectionVariables list (we will expect Enironment only variables to be set independently)
                 JsonNode events = item.path("event");
                 for (JsonNode event : events) {
                     String listen = event.path("listen").asText();
@@ -106,8 +109,7 @@ public class PostmanToRestAssuredGenerator {
 
     private List<ScriptCommand> parseScript(String script) {
         List<ScriptCommand> commands = new ArrayList<>();
-        Pattern pattern = Pattern.compile("pm\\.environment\\.set\\([\"'](.*?)[\"'],\\s*(.*?)\\)");
-        java.util.regex.Matcher matcher = pattern.matcher(script);
+        java.util.regex.Matcher matcher = Patterns.ENVIRONMENT_SET.matcher(script);
         
         while (matcher.find()) {
             ScriptCommand cmd = new ScriptCommand();
@@ -151,11 +153,11 @@ public class PostmanToRestAssuredGenerator {
         }
 
         // Parse pm.test assertions
-        Pattern testPattern = Pattern.compile("pm\\.test\\([\"'](.*?)[\"'],\\s*function\\s*\\(\\)\\s*\\{\\s*(.*?)\\s*\\}\\)");
-        java.util.regex.Matcher testMatcher = testPattern.matcher(script);
+        //Pattern testPattern = Pattern.compile("pm\\.test\\([\"'](.*?)[\"'],\\s*function\\s*\\(\\)\\s*\\{\\s*(.*?)\\s*\\}\\)");
+        java.util.regex.Matcher testMatcher = Patterns.TEST.matcher(script);
         
         while (testMatcher.find()) {
-            String description = testMatcher.group(1);
+            //String description = testMatcher.group(1);
             String testScript = testMatcher.group(2);
             
             // Convert common pm.test assertions to RestAssured format
@@ -246,13 +248,25 @@ public class PostmanToRestAssuredGenerator {
         writer.write("            .headers(" + generateMap(test.headers) + ");\n\n");
 
         if (test.body != null) {
+
             // Escape quotes and newlines in the JSON body
             String escapedBody = test.body.replace("\"", "\\\"")
                                         .replace("\n", "\\n")
                                         .replace("\r", "\\r");
+            Matcher bodyVarMatcher = Patterns.VARIABLE.matcher(escapedBody);
+            while(bodyVarMatcher.find()){
+                String variableName = bodyVarMatcher.group().substring(2, bodyVarMatcher.group().length() - 2); 
+                escapedBody = escapedBody.replace(bodyVarMatcher.group(), "\" + collectionVariables.get(\"" + variableName + "\") + \"");
+                //TODO find all variables in the body and replace them
+            }
             writer.write("        spec.body(\"" + escapedBody + "\");\n\n");
         }
-
+        Matcher urlVarMatcher = Patterns.VARIABLE.matcher(test.url);
+        while(urlVarMatcher.find()){
+            String variableName = urlVarMatcher.group().substring(2, urlVarMatcher.group().length() - 2); 
+            test.url = test.url.replace(urlVarMatcher.group(), "\" + collectionVariables.get(\"" + variableName + "\") + \"");
+            //TODO find all variables in the url and replace them
+        }
         writer.write("        Response response = spec.when()." + test.method.toLowerCase() + "(\"" + test.url + "\");\n\n");
 
         // Write assertions
@@ -285,7 +299,27 @@ public class PostmanToRestAssuredGenerator {
     private String generateMap(Map<String, String> map) {
         StringBuilder sb = new StringBuilder("new HashMap<String, String>() {{\n");
         for (Map.Entry<String, String> entry : map.entrySet()) {
-            sb.append("            put(\"").append(entry.getKey()).append("\", \"").append(entry.getValue()).append("\");\n");
+            String headerValue = "\"" + entry.getValue() + "\"";
+            Matcher matcher = Patterns.VARIABLE.matcher(entry.getValue());
+            if(matcher.find()){
+                //log find
+                logger.info("Variable found in header: " + entry.getValue());
+                //resolve variable
+                String variableName = matcher.group().substring(2, matcher.group().length() - 2); 
+                //logger.info("Variable name: " + variableName);
+                if(collectionVariables.stream().anyMatch(v -> v.key.equals(variableName))){
+                    if(entry.getValue() == matcher.group()){
+                      headerValue = entry.getValue().replace(matcher.group(), "collectionVariables.get(\"" + variableName + "\")");
+                      logger.info("Resolved variable: " + headerValue);
+                    } else {
+                        headerValue = "\""+entry.getValue().replace(matcher.group(), "\" + collectionVariables.get(\"" + variableName + "\") + \"")+"\"";
+                        logger.info("Variable {} is a part of an aggregate string: {}" , variableName, entry.getValue());
+                    }
+                }else{
+                    logger.error("Variable {} not found in collection variables: " , variableName);
+                }
+            }
+            sb.append("            put(\"").append(entry.getKey()).append("\", ").append(headerValue).append(");\n");
         }
         sb.append("        }}");
         return sb.toString();
