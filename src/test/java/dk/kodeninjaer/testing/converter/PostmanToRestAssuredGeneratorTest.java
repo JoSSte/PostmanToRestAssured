@@ -25,7 +25,8 @@ public class PostmanToRestAssuredGeneratorTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "src/test/resources/TestCollection.postman_collection.json",
-            "src/test/resources/TestCollectionFolders.postman_collection.json" })
+            "src/test/resources/TestCollectionFolders.postman_collection.json",
+            "src/test/resources/TestCollectionScripts.postman_collection.json" })
     void processCollectionsWithoutVariables(Path collectionPath, @TempDir Path tempDir) {
         System.out.println("processCollection " + collectionPath);
         try {
