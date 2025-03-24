@@ -38,6 +38,10 @@ java {
    sourceCompatibility = '21'
 }
 
+ext {
+    generatedTestDir = "build/generated"
+}
+
 test {
     finalizedBy jacocoTestReport // report is always generated after tests run
 }
@@ -52,19 +56,12 @@ tasks.withType(Javadoc) {
 
 tasks.named('test', Test) {
     useJUnitPlatform()
-}
-
-jacocoTestReport {
-    dependsOn test // tests are required to run before generating the report
-    // exclude Main.class from the coverage report
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                "dk/kodeninjaer/testing/converter/Main.class"
-            ])
-        }))
+    testLogging {
+        events("PASSED", "FAILED", "SKIPPED")
     }
 }
+
+
 
 jacoco {
     toolVersion = "0.8.11"
@@ -77,22 +74,22 @@ jacoco {
 // register a new directory for source files
 sourceSets {
     generatedTests {
-        java.srcDir 'build/generated/gradle'
+        java.srcDir generatedTestDir
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath + sourceSets.test.compileClasspath
         runtimeClasspath += sourceSets.main.output + sourceSets.main.compileClasspath + sourceSets.test.compileClasspath
     }
 }
 
 // a task to execute the generatedTests source set
-tasks.register("runGeneratedTests",Test) {
+tasks.register("runGeneratedTests", Test) {
+    useJUnitPlatform()
     description = 'Runs the generated tests.'
     group = 'verification'
     testClassesDirs = sourceSets.generatedTests.output.classesDirs
     classpath = sourceSets.main.runtimeClasspath + sourceSets.generatedTests.runtimeClasspath
-    useJUnitPlatform()
 
     // run this after you run the test task
-    shouldRunAfter test
+    mustRunAfter test
 }
 
 tasks.register("generateUnitTests", JavaExec) {
@@ -101,18 +98,50 @@ tasks.register("generateUnitTests", JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = "dk.kodeninjaer.testing.converter.Main"
     args = [
-            // your args to generate the program
             "src/test/resources/TestCollection.postman_collection.json",
-            "dk.kodeninjaer.gradle.testing",
-            "PostmanToRestAssuredGenerator"
+            "dk.kodeninjaer.test",
+            "GradleTest"
         ]
-    //shouldRunBefore generatedTests
 }
-
-
 
 // when check task is run we add our generatedTests that way if test task 
 // is run it will also run our generatedTests
 tasks.named('check') {
    dependsOn(tasks.runGeneratedTests)
+}
+
+tasks.named('compileTestJava') {
+    dependsOn(tasks.generateUnitTests)
+}
+
+tasks.named('compileGeneratedTestsJava') {
+    dependsOn(compileTestJava)
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    //dependsOn runGeneratedTests //TODO: reenable this
+
+    // exclude Main.class from the coverage report
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                "dk/kodeninjaer/testing/converter/Main.class"
+            ])
+        }))
+    }
+
+    // Include generated tests in coverage report
+    executionData test
+    //executionData runGeneratedTests //TODO: reenable this
+    
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    
+    // Add generated tests to coverage sources
+    sourceDirectories.from = files(sourceSets.main.java.srcDirs)
+    classDirectories.from = files(sourceSets.main.output.classesDirs, generatedTestDir)
+
 }
