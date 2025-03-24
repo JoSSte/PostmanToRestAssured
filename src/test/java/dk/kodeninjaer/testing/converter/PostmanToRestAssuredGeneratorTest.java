@@ -64,7 +64,7 @@ public class PostmanToRestAssuredGeneratorTest {
         }
     }
 
-//    @Disabled("Not implemented yet")
+//    @Disabled("pm.collectionVariables.get() is causing errors")
     @ParameterizedTest
     @ValueSource(strings = { "src/test/resources/TestCollectionVariables.postman_collection.json" })
     void processVariableCollection(Path collectionPath, @TempDir Path tempDir) {
