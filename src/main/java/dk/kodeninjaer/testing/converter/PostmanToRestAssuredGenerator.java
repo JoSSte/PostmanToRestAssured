@@ -118,6 +118,7 @@ public class PostmanToRestAssuredGenerator {
             cmd.type = "SET_ENV";
             cmd.key = matcher.group(1);
             cmd.value = matcher.group(2);
+            cmd.originalScript = matcher.group(0);
             commands.add(cmd);
         }
         return commands;
@@ -160,8 +161,9 @@ public class PostmanToRestAssuredGenerator {
         java.util.regex.Matcher testMatcher = Patterns.TEST.matcher(script);
 
         while (testMatcher.find()) {
-            // String description = testMatcher.group(1);
+            String description = testMatcher.group(1);
             String testScript = testMatcher.group(2);
+            String originalScript = testMatcher.group(0);
 
             // Convert common pm.test assertions to RestAssured format
             if (testScript.contains("pm.response.to.have.status")) {
@@ -169,6 +171,7 @@ public class PostmanToRestAssuredGenerator {
                 assertion.type = "expect";
                 assertion.matcher = "have.status";
                 assertion.expected = testScript.replaceAll(".*pm\\.response\\.to\\.have\\.status\\((\\d+)\\).*", "$1");
+                assertion.originalScript = originalScript;
                 assertions.add(assertion);
             }
 
@@ -177,6 +180,7 @@ public class PostmanToRestAssuredGenerator {
                 assertion.type = "expect";
                 assertion.matcher = "contentType";
                 assertion.expected = "\"application/json\"";
+                assertion.originalScript = originalScript;
                 assertions.add(assertion);
             }
 
@@ -210,6 +214,7 @@ public class PostmanToRestAssuredGenerator {
             writer.write("    private static final Logger logger = LoggerFactory.getLogger(" + outputClassName + ".class);\n");
             writer.write("    private static RequestSpecification requestSpec;\n");
             writer.write("    private static Map<String, String> environment = new HashMap<>();\n\n");
+            writer.write("    private static Map<String, String> collectionVariables = new HashMap<>();\n\n");
 
             // Write setup method
             writer.write("    @BeforeAll\n");
@@ -217,13 +222,13 @@ public class PostmanToRestAssuredGenerator {
             writer.write("        requestSpec = new RequestSpecBuilder()\n");
             writer.write("            .setBaseUri(\"" + baseUrl + "\")\n");
             writer.write("            .build();\n");
+            // Write collection variables
+            for (CollectionVariable variable : collectionVariables) {
+                writer.write("        collectionVariables.put(\"" + variable.key + "\", \"" + variable.value + "\");\n");
+            }
             writer.write("    }\n\n");
 
-            // Write collection variables
-            writer.write("    private static Map<String, String> collectionVariables = new HashMap<>();\n");
-            for (CollectionVariable variable : collectionVariables) {
-                writer.write("    collectionVariables.put(\"" + variable.key + "\", \"" + variable.value + "\");\n");
-            }
+            
 
             // Write test methods
             for (TestCase test : testCases) {
@@ -238,6 +243,16 @@ public class PostmanToRestAssuredGenerator {
         String methodName = test.name.replaceAll("[^a-zA-Z0-9]", "_");
         writer.write("    @Test\n");
         writer.write("    public void " + methodName + "() {\n");
+
+        // Write original scripts as comments
+        if (!test.preRequestScript.isEmpty()) {
+            writer.write("        // Pre-request script:\n");
+            writer.write("        /*\n");
+            for (ScriptCommand cmd : test.preRequestScript) {
+                writer.write("        " + cmd.originalScript + "\n");
+            }
+            writer.write("        */\n\n");
+        }
 
         // Write pre-request script execution
         for (ScriptCommand cmd : test.preRequestScript) {
@@ -276,6 +291,15 @@ public class PostmanToRestAssuredGenerator {
                 "        Response response = spec.when()." + test.method.toLowerCase() + "(\"" + test.url + "\");\n\n");
 
         // Write assertions
+        if (!test.testScript.isEmpty()) {
+            writer.write("\n        // Test script:\n");
+            writer.write("        /*\n");
+            for (Assertion assertion : test.testScript) {
+                writer.write("        " + assertion.originalScript + "\n");
+            }
+            writer.write("        */\n\n");
+        }
+
         for (Assertion assertion : test.testScript) {
             switch (assertion.matcher) {
                 case "equal":
@@ -283,6 +307,10 @@ public class PostmanToRestAssuredGenerator {
                     String jsonPath = assertion.actual.replace("jsonData.", "");
                     // Unescape quotes in the expected value
                     String unescapedExpected = assertion.expected.replace("\\\"", "\"");
+                    //TODO: Fix conditioIf the expected value contains pm. we will just put it in a string since we have a bracket matchin issue.
+                    if(unescapedExpected.contains("pm.")) {
+                        unescapedExpected = "\"/*" + assertion.expected + "*/\"";
+                    }
                     writer.write("        response.then().body(\"" + jsonPath + "\", equalTo(" + unescapedExpected
                             + "));\n");
                     break;
@@ -353,6 +381,7 @@ public class PostmanToRestAssuredGenerator {
         String type;
         String key;
         String value;
+        String originalScript;
     }
 
     private static class Assertion {
@@ -361,7 +390,7 @@ public class PostmanToRestAssuredGenerator {
         String matcher;
         String expected;
         String description; // for pm.test assertions
-        String script; // for pm.test assertions
+        String originalScript; // original Postman script
     }
 
     private static class Variable {
