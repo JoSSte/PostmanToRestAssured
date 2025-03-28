@@ -123,11 +123,15 @@ public class PatternsTest {
                 Arguments.of(parameters[4], false),
                 Arguments.of(parameters[5], false),
                 Arguments.of(parameters[6], false),
-                Arguments.of(parameters[7], false),
+                Arguments.of(parameters[7], true),
                 Arguments.of(parameters[8], false),
                 Arguments.of(parameters[9], true),
                 Arguments.of(parameters[10], true),
-                Arguments.of(parameters[11], true)
+                Arguments.of(parameters[11], true),
+                Arguments.of(parameters[12], false),
+                Arguments.of(parameters[13], true),
+                Arguments.of(parameters[14], false),
+                Arguments.of(parameters[15], true)
         );
     }
 

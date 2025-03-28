@@ -25,7 +25,7 @@ public final class Patterns {
     public static final Pattern VAR_SET              = Pattern.compile("pm\\.(environment|globals|collectionVariables)\\.set\\([\"'](.*?)[\"'],\\s*(.*?)\\)");
     public static final Pattern ENVIRONMENT_SET      = Pattern.compile("pm\\.environment\\.set\\([\"'](.*?)[\"'],\\s*(.*?)\\)");
     public static final Pattern ENVIRONMENT_GET      = Pattern.compile("pm\\.environment\\.get\\([\"'](.*?)[\"']\\)");
-    public static final Pattern ENVIRONMENT_GET_PART = Pattern.compile("pm\\.environment\\.get\\([\"'](.*?)[\"']");
+    public static final Pattern ENVIRONMENT_GET_PART = Pattern.compile("pm\\.(environment|globals|collectionVariables)\\.get\\([\"'](.*?)[\"']");
     public static final Pattern EXPECT               = Pattern.compile("pm\\.expect\\((.*?)\\)\\.to\\.(.*?)\\((.*?)\\)|pm\\.response\\.to\\.have\\.status\\((\\d+)\\)");
     public static final Pattern TEST                 = Pattern.compile("pm\\.test\\([\"'](.*?)[\"'],\\s*function\\s*\\(\\)\\s*\\{\\s*(.*?)\\s*\\}\\)");
     
