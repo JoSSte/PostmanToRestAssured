@@ -1,6 +1,7 @@
 package dk.kodeninjaer.testing.converter;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -15,17 +16,20 @@ import java.util.regex.Pattern;
 
 public class PostmanToRestAssuredGeneratorTest {
 
+    @DisplayName("Test Class instance is created and is of correct type")
     @Test
     public void testConstructor() {
         PostmanToRestAssuredGenerator generator = new PostmanToRestAssuredGenerator(
                 "dk.kodeninjaer.testing.converter",
                 "TestCollectionTests");
-        assertNotNull(generator);
+        assertNotNull(generator,"Generator should not be null");
+        assertInstanceOf(PostmanToRestAssuredGenerator.class, generator, "Generator should be an instance of PostmanToRestAssuredGenerator");
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Test {index} with collection: {arguments}")
     @ValueSource(strings = { "src/test/resources/TestCollection.postman_collection.json",
-            "src/test/resources/TestCollectionFolders.postman_collection.json" })
+            "src/test/resources/TestCollectionFolders.postman_collection.json",
+            "src/test/resources/TestCollectionScripts.postman_collection.json" })
     void processCollectionsWithoutVariables(Path collectionPath, @TempDir Path tempDir) {
         System.out.println("processCollection " + collectionPath);
         try {
@@ -64,8 +68,8 @@ public class PostmanToRestAssuredGeneratorTest {
         }
     }
 
-//    @Disabled("Not implemented yet")
-    @ParameterizedTest
+//    @Disabled("pm.collectionVariables.get() is causing errors")
+    @ParameterizedTest(name = "Test Variables {index} with collection: {arguments}")
     @ValueSource(strings = { "src/test/resources/TestCollectionVariables.postman_collection.json" })
     void processVariableCollection(Path collectionPath, @TempDir Path tempDir) {
         System.out.println("processCollection " + collectionPath);

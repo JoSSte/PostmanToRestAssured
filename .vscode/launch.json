@@ -9,7 +9,19 @@
             "name": "Main",
             "request": "launch",
             "mainClass": "dk.kodeninjaer.testing.converter.Main",
-            "projectName": "postman-to-restassured"
+            "projectName": "postman-to-restassured-PostmanToRestAssured"
+        },
+        {
+            "type": "java",
+            "name": "Main-",
+            "request": "launch",
+            "mainClass": "dk.kodeninjaer.testing.converter.Main",
+            "projectName": "postman-to-restassured",
+            "args": [
+                "src/test/resources/TestCollectionScripts.postman_collection.json",
+                "output",
+                "TestCollectionVariableTests"
+            ]
         },
         {
             "type": "java",
@@ -19,7 +31,8 @@
             "projectName": "postman-to-restassured",
             "args": [
                 "src/test/resources/TestCollectionVariables.postman_collection.json",
-                "output","TestCollectionVariableTests"
+                "output",
+                "TestCollectionVariableTests"
             ],
             "env": {
                 "MAVEN_HOME": "${env:MAVEN_HOME}",

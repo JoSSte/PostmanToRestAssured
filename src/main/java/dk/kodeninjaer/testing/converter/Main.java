@@ -16,7 +16,7 @@ public class Main {
         try {
             PostmanToRestAssuredGenerator generator = new PostmanToRestAssuredGenerator(outputPackage, outputClassName);
             generator.generate(postmanCollectionPath);
-            System.out.println("Successfully generated RestAssured test class!");
+            System.out.println("Successfully generated RestAssured test class for " + postmanCollectionPath);
         } catch (IOException e) {
             System.err.println("Error generating test class: " + e.getMessage());
             e.printStackTrace();
