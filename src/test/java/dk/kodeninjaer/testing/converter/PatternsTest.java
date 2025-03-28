@@ -31,7 +31,8 @@ public class PatternsTest {
         "pm.collectionVariables.set(\"somevarKey\",someReturnValue.method());",
         "pm.collectionVariables.get(\"somevarKey\");",
         "pm.collectionVariables.set(\"someKey\",someReturnValue);",
-        "pm.collectionVariables.get(\"someKey\");"
+        "pm.collectionVariables.get(\"someKey\");",
+        "pm.collectionVariables.get(\"message\""
     };
     
 
@@ -102,11 +103,10 @@ public class PatternsTest {
         );
     }
 
-    @DisplayName("Test Environment Get")
-    @ParameterizedTest(name = "Test {index} with script: {arguments}")
+    @ParameterizedTest(name = "Test generic partial get matcher #{index} with script: {arguments}")
     @MethodSource("provideGetPartParameters")
     public void testEnvironmentGetPartial(String script, boolean expected) {
-        Matcher matcher = Patterns.ENVIRONMENT_GET_PART.matcher(script);
+        Matcher matcher = Patterns.GET_PART.matcher(script);
         assertEquals(expected, matcher.find());
     }
 
@@ -131,7 +131,8 @@ public class PatternsTest {
                 Arguments.of(parameters[12], false),
                 Arguments.of(parameters[13], true),
                 Arguments.of(parameters[14], false),
-                Arguments.of(parameters[15], true)
+                Arguments.of(parameters[15], true),
+                Arguments.of(parameters[16], true)
         );
     }
 
@@ -163,7 +164,8 @@ public class PatternsTest {
                 Arguments.of(parameters[12], false),
                 Arguments.of(parameters[13], true),
                 Arguments.of(parameters[14], false),
-                Arguments.of(parameters[15], true)
+                Arguments.of(parameters[15], true),
+                Arguments.of(parameters[16], false)
         );
     }
 
@@ -195,7 +197,8 @@ public class PatternsTest {
                 Arguments.of(parameters[12], true),
                 Arguments.of(parameters[13], false),
                 Arguments.of(parameters[14], true),
-                Arguments.of(parameters[15], false)
+                Arguments.of(parameters[15], false),
+                Arguments.of(parameters[16], false)
         );
     }
 }
