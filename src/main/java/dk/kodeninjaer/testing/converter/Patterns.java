@@ -28,6 +28,7 @@ public final class Patterns {
     public static final Pattern GET_PART            = Pattern.compile("pm\\.(environment|globals|collectionVariables)\\.get\\([\"'](.*?)[\"']");
     public static final Pattern EXPECT              = Pattern.compile("pm\\.expect\\((.*?)\\)\\.to\\.(.*?)\\((.*?)\\)|pm\\.response\\.to\\.have\\.status\\((\\d+)\\)");
     public static final Pattern TEST                = Pattern.compile("pm\\.test\\([\"'](.*?)[\"'],\\s*function\\s*\\(\\)\\s*\\{\\s*(.*?)\\s*\\}\\)");
+    public static final Pattern QUOTE               = Pattern.compile("[\"']([a-zA-Z0-9]*?)[\"']");
     
 
 }

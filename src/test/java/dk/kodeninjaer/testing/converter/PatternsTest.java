@@ -201,4 +201,39 @@ public class PatternsTest {
                 Arguments.of(parameters[16], false)
         );
     }
+
+    @ParameterizedTest(name = "Test Quoted String matcher #{index} with script: {arguments}")
+    @MethodSource("provideQuoteParameters")
+    public void testQuotes(String script, boolean expected, String match1) {
+        Matcher matcher = Patterns.QUOTE.matcher(script);
+        assertEquals(expected, matcher.find());
+        
+        assertEquals(match1, matcher.group(1));
+    }
+
+    /**
+     * Method to provide the parameters for the testEnvironmentGet method
+     * @return
+     */
+    private static Stream<Arguments> provideQuoteParameters() {
+        return Stream.of(
+                Arguments.of(parameters[1],  true,  "someValue"),
+                Arguments.of(parameters[2],  true,  "someKey"),
+                Arguments.of(parameters[3],  true,  "someKey"),
+                Arguments.of(parameters[4],  true,  "someValue"),
+                Arguments.of(parameters[5],  true,  "someValue"),
+                Arguments.of(parameters[6],  true,  "someKey"),
+                Arguments.of(parameters[7],  true,  "someValue"),
+                Arguments.of(parameters[8],  true,  "someKey"),
+                Arguments.of(parameters[9],  true,  "somePartValue"),
+                Arguments.of(parameters[10], true,  "somePartValue"),
+                Arguments.of(parameters[11], true,  "somePartValue"),
+                Arguments.of(parameters[12], true,  "somevarKey"),
+                Arguments.of(parameters[13], true,  "somevarKey"),
+                Arguments.of(parameters[14], true,  "someKey"),
+                Arguments.of(parameters[15], true,  "someKey"),
+                Arguments.of(parameters[16], true,  "message")
+        );
+    }
+
 }

@@ -372,9 +372,23 @@ public class PostmanToRestAssuredGenerator {
                     String jsonPath = assertion.actual.replace("jsonData.", "");
                     // Unescape quotes in the expected value
                     String unescapedExpected = assertion.expected.replace("\\\"", "\"");
+                    Matcher envVarGetMatcher = Patterns.GET_PART.matcher(unescapedExpected);
+                    //TODO if there is anything besides a string in here we won't replace it nicely
+                    while (envVarGetMatcher.find()) {
+                        Matcher varNameMatcher = Patterns.QUOTE.matcher(unescapedExpected);
+
+                        String variableName = "";
+                        if(varNameMatcher.find()){
+                            variableName = varNameMatcher.group(1);
+                        }
+                        unescapedExpected = unescapedExpected.replace(envVarGetMatcher.group(),
+                                "collectionVariables.get(\"" + variableName + "\")");
+                    }                    
+                    
                     //TODO: Fix conditioIf the expected value contains pm. we will just put it in a string since we have a bracket matchin issue.
                     if(unescapedExpected.contains("pm.")) {
-                        unescapedExpected = "\"/*" + assertion.expected + "*/\"";
+                        //unescapedExpected = "\"/*" + assertion.expected + "*/\"";
+                        unescapedExpected = unescapedExpected.replace("pm\\.(environment|globals|collectionVariables)", "x") ;
                     }
                     writer.write("        response.then().body(\"" + jsonPath + "\", equalTo(" + unescapedExpected
                             + "));\n");

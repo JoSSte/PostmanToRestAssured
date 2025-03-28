@@ -26,7 +26,6 @@ public class PostmanToRestAssuredGeneratorTest {
         assertInstanceOf(PostmanToRestAssuredGenerator.class, generator, "Generator should be an instance of PostmanToRestAssuredGenerator");
     }
 
-    @DisplayName("Test Collections without variables")
     @ParameterizedTest(name = "Test {index} with collection: {arguments}")
     @ValueSource(strings = { "src/test/resources/TestCollection.postman_collection.json",
             "src/test/resources/TestCollectionFolders.postman_collection.json",
@@ -70,8 +69,7 @@ public class PostmanToRestAssuredGeneratorTest {
     }
 
 //    @Disabled("pm.collectionVariables.get() is causing errors")
-    @DisplayName("Test Collection with variables")
-    @ParameterizedTest
+    @ParameterizedTest(name = "Test Variables {index} with collection: {arguments}")
     @ValueSource(strings = { "src/test/resources/TestCollectionVariables.postman_collection.json" })
     void processVariableCollection(Path collectionPath, @TempDir Path tempDir) {
         System.out.println("processCollection " + collectionPath);
