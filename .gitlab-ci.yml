@@ -28,7 +28,7 @@ build:
 
 test:
   stage: test
-  script: gradle check
+  script: gradle test
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull
@@ -36,7 +36,17 @@ test:
       - build
       - .gradle
 
-deploy:
-  stage: deploy
-  script: echo "Define your deployment script!"
-  environment: production
+testGenerated:
+  stage: test
+  script: gradle generateTests  runGeneratedTests
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - build
+      - .gradle
+
+#deploy:
+#  stage: deploy
+#  script: echo "Define your deployment script!"
+#  environment: production
