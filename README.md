@@ -2,6 +2,9 @@
 
 This tool converts Postman collections into RestAssured test classes. It takes a Postman collection JSON file and generates a Java test class that uses RestAssured to perform the same API tests.
 
+## Disclaimer
+This is in no way meant to convert any Postman v. 2.1 collection completely to a RestAssured collection. It is meant to give you a starting point from which to convert your project from Postman to RestAssured. As a minimum it will import the general setup of your test and the script fromp postman commented out, for reference. Some features will be converted, and the idea is that it gives you a starting point instead of starting from scratch. The more complex your setup is, the less features you will get converted.
+
 ## Features
 
 - Converts Postman requests to RestAssured test methods
