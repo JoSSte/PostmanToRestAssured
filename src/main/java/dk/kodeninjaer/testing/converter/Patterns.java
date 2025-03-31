@@ -10,11 +10,25 @@ public final class Patterns {
     private Patterns() {
     }
 
+    /**
+     * For matching double-moustache notation variables
+     */
     public static final Pattern VARIABLE            = Pattern.compile("\\{\\{[a-zA-Z0-9]*\\}\\}");
+    /**
+     * For matching any variable getter in a script 
+     * pm.<scope>.get("variableName")
+     */
+    public static final Pattern VAR_GET             = Pattern.compile("pm\\.(environment|globals|collectionVariables)\\.get\\([\"'](.*?)[\"']\\)");
+    /**
+     * For matching any variable setter in a script 
+     */
+    public static final Pattern VAR_SET             = Pattern.compile("pm\\.(environment|globals|collectionVariables)\\.set\\([\"'](.*?)[\"'],\\s*(.*?)\\)");
     public static final Pattern ENVIRONMENT_SET     = Pattern.compile("pm\\.environment\\.set\\([\"'](.*?)[\"'],\\s*(.*?)\\)");
     public static final Pattern ENVIRONMENT_GET     = Pattern.compile("pm\\.environment\\.get\\([\"'](.*?)[\"']\\)");
+    public static final Pattern GET_PART            = Pattern.compile("pm\\.(environment|globals|collectionVariables)\\.get\\([\"'](.*?)[\"']");
     public static final Pattern EXPECT              = Pattern.compile("pm\\.expect\\((.*?)\\)\\.to\\.(.*?)\\((.*?)\\)|pm\\.response\\.to\\.have\\.status\\((\\d+)\\)");
     public static final Pattern TEST                = Pattern.compile("pm\\.test\\([\"'](.*?)[\"'],\\s*function\\s*\\(\\)\\s*\\{\\s*(.*?)\\s*\\}\\)");
+    public static final Pattern QUOTE               = Pattern.compile("[\"']([a-zA-Z0-9]*?)[\"']");
     
 
 }

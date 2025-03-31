@@ -1,0 +1,219 @@
+{
+	"info": {
+		"_postman_id": "b7462255-16f5-4e6d-adab-9664ed5726d1",
+		"name": "TestCollectionLoops",
+		"description": "Test Collection to showcase postman all calls are made to [https://httpbin.org/#/HTTP_Methods/post_post](https://httpbin.org/#/HTTP_Methods/post_post)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2985490"
+	},
+	"item": [
+		{
+			"name": "PreLoop",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://httpbin.org/get",
+					"protocol": "https",
+					"host": [
+						"httpbin",
+						"org"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LoopStart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"let counter = 1;",
+							"if(pm.collectionVariables.has(\"counter\")){",
+							"    counter = pm.collectionVariables.get(\"counter\");",
+							"    console.log(counter);",
+							"}else {",
+							"    pm.collectionVariables.set(\"counter\",1);",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://httpbin.org/get?counter={{counter}}",
+					"protocol": "https",
+					"host": [
+						"httpbin",
+						"org"
+					],
+					"path": [
+						"get"
+					],
+					"query": [
+						{
+							"key": "counter",
+							"value": "{{counter}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LoopMiddle",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://httpbin.org/get?counter={{counter}}",
+					"protocol": "https",
+					"host": [
+						"httpbin",
+						"org"
+					],
+					"path": [
+						"get"
+					],
+					"query": [
+						{
+							"key": "counter",
+							"value": "{{counter}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LoopEnd",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"let counter = pm.collectionVariables.get(\"counter\");",
+							"if(counter == 1){",
+							"    pm.collectionVariables.set(\"counter\",2);",
+							"    console.log(\"counter is 1 - looping\");",
+							"    pm.execution.setNextRequest(\"LoopStart\");",
+							"}else {",
+							"    pm.collectionVariables.unset(\"counter\");",
+							"    console.log(\"counter is not 1 - continuing\");",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://httpbin.org/get?counter={{counter}}",
+					"protocol": "https",
+					"host": [
+						"httpbin",
+						"org"
+					],
+					"path": [
+						"get"
+					],
+					"query": [
+						{
+							"key": "counter",
+							"value": "{{counter}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PostLoop",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://httpbin.org/get",
+					"protocol": "https",
+					"host": [
+						"httpbin",
+						"org"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
